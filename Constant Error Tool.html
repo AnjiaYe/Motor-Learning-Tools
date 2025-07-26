@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constant Error Teaching Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #targetArea {
+            cursor: crosshair;
+            /* concentric rings resembling a dartboard */
+            background: radial-gradient(
+              circle at center,
+              #c0392b        0% 12%,   /* inner bull (red) */
+              #27ae60       12% 22%,   /* outer bull (green) */
+              #000000       22% 42%,   /* single ring (black) */
+              #ecf0f1       42% 62%,   /* single ring (white) */
+              #000000       62% 82%,   /* outer single ring (black) */
+              transparent   82% 100%   /* fade out */
+            );
+            border: 8px solid #2d3436;               /* thick dark rim */
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.6); /* inner shadow for depth */
+        }
+        /* Custom Tooltip styles */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: max-content;
+            max-width: 320px;
+            background-color: #2d3436;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            font-size: 0.8rem;
+            font-weight: 500;
+            pointer-events: none;
+            line-height: 1.4;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Chatbot styles */
+        #chatbot-btn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 50;
+            background: #2563eb;
+            color: white;
+            border-radius: 9999px;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            cursor: pointer;
+            font-size: 2rem;
+        }
+        #chatbot-modal {
+            position: fixed;
+            bottom: 100px;
+            right: 32px;
+            width: 350px;
+            max-width: 90vw;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            resize: none; /* default, will enable manually */
+        }
+        #chatbot-modal.resizing {
+            user-select: none;
+            pointer-events: none;
+        }
+        #chatbot-header {
+            background: #2563eb;
+            color: white;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+        #chatbot-messages {
+            padding: 1rem;
+            height: 260px;
+            overflow-y: auto;
+            background: #f3f4f6;
+            font-size: 0.95rem;
+        }
+        .chatbot-msg-user {
+            text-align: right;
+            margin-bottom: 0.5rem;
+        }
+        .chatbot-msg-assistant {
+            text-align: left;
+            margin-bottom: 0.5rem;
+        }
+        #chatbot-input-row {
+            display: flex;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+        }
+        #chatbot-input {
+            flex: 1;
+            border: none;
+            padding: 0.75rem;
+            font-size: 1rem;
+            outline: none;
+        }
+        #chatbot-send {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0 1rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        #chatbot-resizer {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 22px;
+            height: 22px;
+            cursor: nwse-resize;
+            z-index: 101;
+            background: transparent;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+        #chatbot-resizer:after {
+            content: "";
+            display: block;
+            width: 16px;
+            height: 16px;
+            border-right: 2px solid #2563eb;
+            border-bottom: 2px solid #2563eb;
+            border-radius: 0 0 4px 0;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Interactive Constant Error Tool</h1>
+            <p class="mt-2 text-lg text-gray-600">Click on the target to throw darts and measure your own constant error.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Controls and Info Panel -->
+            <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <h2 class="text-xl font-bold mb-6 border-b pb-3">Instructions</h2>
+                
+                <div class="space-y-4">
+                   <p class="text-sm text-gray-700">
+                       1. Click on the target area to the right to "throw" a dart.
+                   </p>
+                   <p class="text-sm text-gray-700">
+                       2. The tool will record how far above (+) or below (-) the red "True Value" line your throw lands.
+                   </p>
+                    <p class="text-sm text-gray-700">
+                       3. After 10 throws, the average error will be calculated automatically.
+                   </p>
+                </div>
+
+                <div id="throw-counter-container" class="mt-6">
+                    <h3 class="text-lg font-bold">Throws</h3>
+                    <div class="text-center text-4xl font-mono font-bold text-blue-600 mt-2 bg-gray-100 p-4 rounded-lg">
+                        <span id="throw-count">0</span> / 10
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-4 border-t">
+                    <button id="resetBtn" class="w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dartboard Visualization -->
+            <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-md border border-gray-200 flex justify-center items-center">
+              <div id="dartboard-container" class="relative w-full h-[500px] flex items-center justify-center">
+                <!-- Scale -->
+                <div class="h-full w-8 text-xs text-right pr-2 text-gray-500 relative">
+                    <div style="top: 0%;" class="absolute right-2">+25 cm</div>
+                    <div style="top: 25%;" class="absolute right-2">+12.5 cm</div>
+                    <div style="top: 50%; transform: translateY(-50%);" class="absolute right-2 font-bold">0 cm</div>
+                    <div style="bottom: 25%;" class="absolute right-2">-12.5 cm</div>
+                    <div style="bottom: 0%;" class="absolute right-2">-25 cm</div>
+                </div>
+                <!-- Target Area -->
+                <div
+                  id="targetArea"
+                  class="relative w-full aspect-square max-h-[500px] rounded-full overflow-visible shadow-lg"
+                >
+                  <!-- True Value Line -->
+                  <div class="absolute w-full h-0.5 bg-red-500 top-1/2 -translate-y-1/2 pointer-events-none">
+                     <span class="absolute -right-14 top-1/2 -translate-y-1/2 text-xs font-bold text-red-500 bg-white px-1 rounded">True Value</span>
+                  </div>
+                  <!-- Average Line (initially hidden) -->
+                  <div id="averageLine" class="absolute w-full h-1 bg-blue-500 top-1/2 -translate-y-1/2 hidden transition-all duration-500 ease-out pointer-events-none">
+                       <span id="averageLineLabel" class="absolute -left-20 top-1/2 -translate-y-1/2 text-xs font-bold text-blue-500 bg-white px-1 rounded">Average</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="lg:col-span-4 bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <h2 class="text-xl font-bold mb-4 border-b pb-3">Results</h2>
+                <div id="results-content">
+                     <div class="text-center text-gray-500 mt-16">
+                        <p>Click on the target to begin throwing.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Chatbot Button -->
+    <div id="chatbot-btn" title="Ask AI">
+        💬
+    </div>
+    <!-- Chatbot Modal -->
+    <div id="chatbot-modal">
+        <div id="chatbot-header">
+            <span>Ask Scott-e lite</span>
+            <button id="chatbot-close" aria-label="Close">&times;</button>
+        </div>
+        <div id="chatbot-messages">
+            <div class="chatbot-msg-assistant">
+                <span><b>Assistant:</b> Hi! Ask me anything about constant error, dartboards, or this tool.</span>
+            </div>
+        </div>
+        <form id="chatbot-input-row" autocomplete="off">
+            <input id="chatbot-input" type="text" placeholder="Type your question..." autocomplete="off" />
+            <button id="chatbot-send" type="submit">Send</button>
+        </form>
+        <div id="chatbot-resizer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // DOM Elements
+        const resetBtn = document.getElementById('resetBtn');
+        const targetArea = document.getElementById('targetArea');
+        const averageLine = document.getElementById('averageLine');
+        const averageLineLabel = document.getElementById('averageLineLabel');
+        const resultsContent = document.getElementById('results-content');
+        const throwCountEl = document.getElementById('throw-count');
+
+        // --- State ---
+        let throws = [];
+        const MAX_THROWS = 10;
+
+        // --- Utility Functions ---
+        
+        /**
+         * Formats a number to one decimal place and adds a '+' sign if positive.
+         * @param {number} num The number to format.
+         * @returns {string} The formatted string.
+         */
+        const formatValue = (num) => {
+            const fixedNum = num.toFixed(1);
+            return num >= 0 ? `+${fixedNum}` : fixedNum;
+        };
+
+        /**
+         * Maps a vertical pixel position within the target to a cm value.
+         * The board represents a range of 50cm (-25 to +25).
+         * @param {number} yPosition The y-coordinate of the click relative to the target area.
+         * @param {number} targetHeight The total height of the target area.
+         * @returns {number} The measurement in centimeters.
+         */
+        const mapPixelsToCm = (yPosition, targetHeight) => {
+            const percentage = yPosition / targetHeight;
+            // We multiply by -50 because a higher pixel value (down) corresponds to a negative cm value (up).
+            const cm = (percentage - 0.5) * -50;
+            return cm;
+        };
+        
+        /**
+         * Maps a measurement value (cm) to a percentage for CSS positioning.
+         * @param {number} cm The measurement in centimeters.
+         * @returns {number} The top percentage for positioning.
+         */
+        const mapCmToPercentage = (cm) => {
+            const clampedCm = Math.max(-25, Math.min(25, cm));
+            return 50 - (clampedCm / 25) * 50;
+        };
+        
+        // --- Core Logic ---
+
+        /**
+         * Handles a click on the target area to record a throw.
+         * @param {MouseEvent} event The click event.
+         */
+        const handleTargetClick = (event) => {
+            if (throws.length >= MAX_THROWS) {
+                // Simple feedback if user clicks after 10 throws
+                const fullMessage = document.querySelector('.full-message');
+                if (!fullMessage) {
+                    const p = document.createElement('p');
+                    p.className = 'full-message text-center text-red-500 font-semibold mt-4';
+                    p.textContent = 'Throw limit reached. Please Reset.';
+                    document.getElementById('throw-counter-container').appendChild(p);
+                }
+                return;
+            }
+
+            const rect = targetArea.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const cmValue = mapPixelsToCm(y, rect.height);
+            throws.push(cmValue);
+
+            renderDart(x, y);
+            updateResults();
+            updateThrowCounter();
+        };
+
+        /**
+         * Renders a single dart on the target at the clicked position.
+         * @param {number} x The horizontal pixel position.
+         * @param {number} y The vertical pixel position.
+         */
+        const renderDart = (x, y) => {
+            const dartEl = document.createElement('div');
+            dartEl.className = 'dart absolute w-4 h-4 bg-gray-800 rounded-full border-2 border-white shadow-lg';
+            dartEl.style.left = `${x}px`;
+            dartEl.style.top = `${y}px`;
+            dartEl.style.transform = 'translate(-50%, -50%)';
+            targetArea.appendChild(dartEl);
+        };
+        
+        /**
+         * Updates the results panel with the log and summary stats if applicable.
+         */
+        const updateResults = () => {
+            if (throws.length === 0) {
+                 resultsContent.innerHTML = `
+                    <div class="text-center text-gray-500 mt-16">
+                        <p>Click on the target to begin throwing.</p>
+                    </div>`;
+                return;
+            }
+            
+            // On the first throw, set up summary container + throw log + copy button
+            if (throws.length === 1) {
+              resultsContent.innerHTML = `
+                <div id="summary-container" class="mb-4"></div>
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-gray-800">Throw Log</h3>
+                    <button id="copyLogBtn" class="text-blue-600 hover:underline text-sm">Copy Log</button>
+                  </div>
+                  <ul id="throw-log" class="mt-2 h-64 overflow-y-auto border rounded-lg p-2 bg-white"></ul>
+                </div>`;
+              // Copy-to-clipboard handler
+              const copyBtn = document.getElementById('copyLogBtn');
+              copyBtn.addEventListener('click', () => {
+                let data = 'Throw\tError(cm)\n';
+                throws.forEach((val, idx) => {
+                  data += `${idx + 1}\t${formatValue(val)}\n`;
+                });
+                navigator.clipboard.writeText(data).then(() => {
+                  alert('Throw log copied to clipboard!');
+                });
+              });
+            }
+
+            // Update the throw log
+            const throwLogEl = document.getElementById('throw-log');
+            const lastThrow = throws[throws.length - 1];
+            const logItem = document.createElement('li');
+            logItem.className = `flex justify-between text-sm py-1 px-2 rounded ${throws.length % 2 === 0 ? 'bg-gray-50' : ''}`;
+            logItem.innerHTML = `
+                <span>Throw ${throws.length}:</span>
+                <span class="font-mono font-semibold">${formatValue(lastThrow)} cm</span>`;
+            throwLogEl.appendChild(logItem);
+            throwLogEl.scrollTop = throwLogEl.scrollHeight; // Auto-scroll
+
+            // If 10 throws are complete, calculate and show the average
+            if (throws.length === MAX_THROWS) {
+                const sum = throws.reduce((acc, val) => acc + val, 0);
+                const average = sum / throws.length;
+                // New metrics
+                const absSum = throws.reduce((acc, v) => acc + Math.abs(v), 0);
+                const absAvg = absSum / throws.length;
+                const maxError = Math.max(...throws);
+                const minError = Math.min(...throws);
+                const rangeError = maxError - minError;
+
+                // Calculation tooltips
+                const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
+                const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
+                const veFormula = `${formatValue(maxError)} - (${formatValue(minError)})`;
+
+                const summaryContainer = document.getElementById('summary-container');
+                summaryContainer.innerHTML = `
+                    <h3 class="font-bold text-gray-800">Final Summary</h3>
+                    <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
+                      <div class="flex justify-between items-center tooltip">
+                        <span class="text-sm font-medium">Constant Error 𝑥̄:</span>
+                        <span class="text-lg font-bold text-blue-600">${formatValue(average)} cm</span>
+                        <span class="tooltip-text">Calculation: ${ceFormula} = ${formatValue(average)} cm</span>
+                      </div>
+                      <div class="flex justify-between items-center tooltip">
+                        <span class="text-sm font-medium">Absolute Error |𝑥̄|:</span>
+                        <span class="text-lg font-bold text-blue-600">${formatValue(absAvg)} cm</span>
+                        <span class="tooltip-text">Calculation: ${aeFormula} = ${formatValue(absAvg)} cm</span>
+                      </div>
+                      <div class="flex justify-between items-center tooltip">
+                        <span class="text-sm font-medium">Variable Error (Range):</span>
+                        <span class="text-lg font-bold text-blue-600">${formatValue(rangeError)} cm</span>
+                        <span class="tooltip-text">Calculation: ${veFormula} = ${formatValue(rangeError)} cm</span>
+                      </div>
+                    </div>`;
+
+                // Update and show the average line on the board
+                averageLine.style.top = `${mapCmToPercentage(average)}%`;
+                averageLineLabel.textContent = `Avg: ${formatValue(average)} cm`;
+                averageLine.classList.remove('hidden');
+            }
+        };
+
+        /**
+         * Updates the visual throw counter.
+         */
+        const updateThrowCounter = () => {
+            throwCountEl.textContent = throws.length;
+        };
+        
+        /**
+         * Resets the entire tool to its initial state.
+         */
+        const handleReset = () => {
+            throws = [];
+            
+            // Remove darts from board
+            const existingDarts = targetArea.querySelectorAll('.dart');
+            existingDarts.forEach(dart => dart.remove());
+            
+            // Hide average line
+            averageLine.classList.add('hidden');
+            
+            // Reset results panel
+            resultsContent.innerHTML = `
+                <div class="text-center text-gray-500 mt-16">
+                    <p>Click on the target to begin throwing.</p>
+                </div>`;
+            
+            // Reset counter
+            updateThrowCounter();
+            const fullMessage = document.querySelector('.full-message');
+            if (fullMessage) fullMessage.remove();
+        };
+        
+        // --- Event Listeners ---
+        targetArea.addEventListener('click', handleTargetClick);
+        resetBtn.addEventListener('click', handleReset);
+
+        // --- Chatbot logic ---
+        const chatbotBtn = document.getElementById('chatbot-btn');
+        const chatbotModal = document.getElementById('chatbot-modal');
+        const chatbotClose = document.getElementById('chatbot-close');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+        const chatbotInputRow = document.getElementById('chatbot-input-row');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotResizer = document.getElementById('chatbot-resizer');
+
+        let chatbotSession = null;
+        let chatbotAvailable = false;
+
+        // Show/hide chatbot modal
+        chatbotBtn.onclick = () => {
+            chatbotModal.style.display = 'flex';
+            chatbotInput.focus();
+        };
+        chatbotClose.onclick = () => {
+            chatbotModal.style.display = 'none';
+        };
+
+        // Resizing logic
+        let resizing = false, startX, startY, startW, startH;
+        chatbotResizer.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            resizing = true;
+            chatbotModal.classList.add('resizing');
+            startX = e.clientX;
+            startY = e.clientY;
+            startW = chatbotModal.offsetWidth;
+            startH = chatbotModal.offsetHeight;
+            document.body.style.cursor = 'nwse-resize';
+        });
+        window.addEventListener('mousemove', function(e) {
+            if (!resizing) return;
+            let newW = Math.max(250, Math.min(600, startW + (e.clientX - startX)));
+            let newH = Math.max(200, Math.min(600, startH + (e.clientY - startY)));
+            chatbotModal.style.width = newW + 'px';
+            chatbotModal.style.height = newH + 'px';
+        });
+        window.addEventListener('mouseup', function() {
+            if (resizing) {
+                resizing = false;
+                chatbotModal.classList.remove('resizing');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Try to create a Prompt API session
+        async function setupChatbot() {
+            if (!('LanguageModel' in window)) {
+                chatbotAvailable = false;
+                return;
+            }
+            try {
+                const availability = await window.LanguageModel.availability({
+                    expectedInputs: [{ type: "text", languages: ["en"] }]
+                });
+                if (availability === "unavailable") {
+                    chatbotAvailable = false;
+                    return;
+                }
+                const params = await window.LanguageModel.params();
+                chatbotSession = await window.LanguageModel.create({
+                    temperature: 0.8,
+                    topK: params.defaultTopK,
+                    initialPrompts: [
+                        { role: "system", content: "You are a helpful assistant for a constant error teaching tool. You will be provided with the user's current throw data (the 'context') before their question. Use this context to answer questions about their performance. Explain concepts, answer questions, and help users understand the dartboard and results. Be brief and helpful." }
+                    ],
+                    expectedInputs: [{ type: "text", languages: ["en"] }]
+                });
+                chatbotAvailable = true;
+            } catch (e) {
+                chatbotAvailable = false;
+            }
+        }
+        setupChatbot();
+
+        // Handle sending a message
+        chatbotInputRow.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = chatbotInput.value.trim();
+            if (!msg) return;
+            // Show user message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chatbot-msg-user';
+            userDiv.innerHTML = `<span><b>You:</b> ${msg}</span>`;
+            chatbotMessages.appendChild(userDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            chatbotInput.value = '';
+            // Show assistant "thinking"
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'chatbot-msg-assistant';
+            thinkingDiv.innerHTML = `<span><b>Assistant:</b> <em>Thinking...</em></span>`;
+            chatbotMessages.appendChild(thinkingDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+            // Get response
+            if (!chatbotAvailable || !chatbotSession) {
+                thinkingDiv.innerHTML = `<span><b>Assistant:</b> Sorry, AI assistant is not available in this browser.</span>`;
+                return;
+            }
+
+            // --- Build context from game state ---
+            let context = "";
+            if (throws.length > 0) {
+                context += `Here is the current context of the user's performance:\n`;
+                context += `Throws made: ${throws.length} / ${MAX_THROWS}\n`;
+                context += "Throw Log (deviation from center in cm):\n";
+                throws.forEach((val, idx) => {
+                    context += `- Throw ${idx + 1}: ${formatValue(val)}\n`;
+                });
+
+                if (throws.length === MAX_THROWS) {
+                    const sum = throws.reduce((acc, val) => acc + val, 0);
+                    const average = sum / throws.length;
+                    const absSum = throws.reduce((acc, v) => acc + Math.abs(v), 0);
+                    const absAvg = absSum / throws.length;
+                    const maxError = Math.max(...throws);
+                    const minError = Math.min(...throws);
+                    const rangeError = maxError - minError;
+                    
+                    const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
+                    const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
+                    const veFormula = `${formatValue(maxError)} - (${formatValue(minError)})`;
+
+                    context += "\nFinal Summary:\n";
+                    context += `- Constant Error: ${formatValue(average)} cm (Calculation: ${ceFormula})\n`;
+                    context += `- Absolute Error: ${formatValue(absAvg)} cm (Calculation: ${aeFormula})\n`;
+                    context += `- Variable Error (Range): ${formatValue(rangeError)} cm (Calculation: ${veFormula})\n`;
+                }
+                context += "\n---\nUser question: ";
+            }
+            
+            const promptWithContext = context + msg;
+
+            try {
+                const response = await chatbotSession.prompt(promptWithContext);
+                // Render markdown
+                thinkingDiv.innerHTML = `<span><b>Assistant:</b> </span><div class="prose prose-sm">${marked.parse(response)}</div>`;
+            } catch (err) {
+                thinkingDiv.innerHTML = `<span><b>Assistant:</b> Sorry, something went wrong.</span>`;
+            }
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        });
+
+        // Optional: close modal on outside click
+        window.addEventListener('mousedown', (e) => {
+            if (chatbotModal.style.display === 'flex' && !chatbotModal.contains(e.target) && e.target !== chatbotBtn) {
+                chatbotModal.style.display = 'none';
+            }
+        });
+
+    </script>
+</body>
+</html>
