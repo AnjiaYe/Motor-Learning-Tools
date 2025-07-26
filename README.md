@@ -13,9 +13,11 @@ I'm starting my teaching journey as a tutor in motor learning, aiming to help st
 
 ## What You'll Find Here
 
-- **Interactive Motor Learning Tools:**  
+- **Interactive Motor Learning Tools:**
+- <img width="1156" height="886" alt="Screenshot 2025-07-26 193637" src="https://github.com/user-attachments/assets/eafc13cf-76d6-41d3-8ab5-7622557f4eb4" />
+
   - **Constant Error 𝑥̄, Absolute Error |𝑥̄|, and Variable Error (Range):**  
-    The [Constant Error Tool](./Constant%20Error%20Tool.html) provides an interactive platform for students to learn and measure key concepts in motor performance. Students can explore: *Constant Error 𝑥̄* *Absolute Error |𝑥̄|* *Variable Error (Range)*
+    The [Constant Error Tool](./Constant%20Error%20Tool.html) provides an interactive platform for students to learn and measure key concepts in motor performance using a dartboard game.
     These concepts are visualized and calculated live as students "throw darts" on the digital dartboard.
   - **Privacy-Preserving, Local AI**: To protect student privacy, the tool applies [Prompt API](https://github.com/webmachinelearning/prompt-api), enabling local LLM (Large Language Model) directly in the browser. This allows for personalized, context-aware guidance based on each student's dartboard performance without data leaving their device.
 
