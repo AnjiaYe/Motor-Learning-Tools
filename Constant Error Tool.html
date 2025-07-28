@@ -4,13 +4,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Constant Error Teaching Tool</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        /* scope the font only to this tool */
+        #constant-error-tool {
             font-family: 'Inter', sans-serif;
         }
-        #targetArea {
+        /* General body and container styles */
+        body {
+            background-color: #f9fafb;
+            color: #1f2937;
+            margin: 0;
+        }
+        #constant-error-tool .container {
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1rem;
+        }
+        @media (min-width: 768px) {
+            #constant-error-tool .container {
+                padding: 2rem;
+            }
+        }
+        /* Header */
+        #constant-error-tool header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        #constant-error-tool header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        @media (min-width: 768px) {
+            #constant-error-tool header h1 {
+                font-size: 2.25rem;
+            }
+        }
+        #constant-error-tool header p {
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            color: #4b5563;
+        }
+        /* Main grid layout */
+        #constant-error-tool .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            #constant-error-tool .main-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
+            #constant-error-tool .panel-controls { grid-column: span 3; }
+            #constant-error-tool .panel-dartboard { grid-column: span 5; }
+            #constant-error-tool .panel-results { grid-column: span 4; }
+        }
+        /* Panel base styles */
+        #constant-error-tool .panel {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+        }
+        #constant-error-tool .panel h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.75rem;
+        }
+        /* Controls Panel */
+        .panel-controls .instructions p {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+        .panel-controls .instructions p:last-child { margin-bottom: 0; }
+        #throw-counter-container { margin-top: 1.5rem; }
+        #throw-counter-container h3 { font-size: 1.125rem; font-weight: 700; }
+        #throw-counter-container .counter-display {
+            text-align: center;
+            font-size: 2.25rem;
+            font-family: monospace;
+            font-weight: 700;
+            color: #2563eb;
+            margin-top: 0.5rem;
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .panel-controls .reset-container {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        #resetBtn {
+            width: 100%;
+            background-color: #e5e7eb;
+            color: #374151;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #resetBtn:hover { background-color: #d1d5db; }
+        /* Dartboard Panel */
+        .panel-dartboard {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        #dartboard-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scale-container {
+            height: 100%;
+            width: 2rem;
+            font-size: 0.75rem;
+            text-align: right;
+            padding-right: 0.5rem;
+            color: #6b7280;
+            position: relative;
+        }
+        .scale-container div { position: absolute; right: 0.5rem; }
+        .scale-container .scale-0 { font-weight: 700; transform: translateY(-50%); }
+        /* scope the dartboard styles */
+        #constant-error-tool #targetArea {
             cursor: crosshair;
             /* concentric rings resembling a dartboard */
             background: radial-gradient(
@@ -24,13 +153,138 @@
             );
             border: 8px solid #2d3436;               /* thick dark rim */
             box-shadow: inset 0 0 8px rgba(0,0,0,0.6); /* inner shadow for depth */
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 500px;
+            border-radius: 9999px;
+            overflow: visible;
+        }
+        .true-value-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: #ef4444;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        .true-value-line span {
+            position: absolute;
+            right: -3.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ef4444;
+            background-color: #fff;
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+        }
+        #averageLine {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background-color: #2563eb;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.5s ease-out;
+            pointer-events: none;
+        }
+        #averageLine.hidden { display: none; }
+        #averageLineLabel {
+            position: absolute;
+            left: -5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #2563eb;
+            background-color: #fff;
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+        }
+        /* Results Panel */
+        #results-content .placeholder {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 4rem;
+        }
+        #summary-container { margin-bottom: 1rem; }
+        #summary-container h3 { font-weight: 700; color: #1f2937; }
+        .summary-box {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.5rem;
+        }
+        .summary-box > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .summary-box > div:last-child { margin-bottom: 0; }
+        .summary-box .label { font-size: 0.875rem; font-weight: 500; }
+        .summary-box .value { font-size: 1.125rem; font-weight: 700; color: #2563eb; }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .log-header h3 { font-weight: 700; color: #1f2937; }
+        #copyLogBtn {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.875rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        #copyLogBtn:hover { text-decoration: underline; }
+        #throw-log {
+            margin-top: 0.5rem;
+            height: 16rem; /* 256px */
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            background-color: #fff;
+            list-style: none;
+        }
+        #throw-log li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        #throw-log li:nth-child(even) { background-color: #f9fafb; }
+        #throw-log .value { font-family: monospace; font-weight: 600; }
+        .dart {
+            position: absolute;
+            width: 1rem;
+            height: 1rem;
+            background-color: #1f2937;
+            border-radius: 9999px;
+            border: 2px solid white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            transform: translate(-50%, -50%);
+        }
+        .full-message {
+            text-align: center;
+            color: #ef4444;
+            font-weight: 600;
+            margin-top: 1rem;
         }
         /* Custom Tooltip styles */
-        .tooltip {
+        #constant-error-tool .tooltip {
             position: relative;
             cursor: help;
         }
-        .tooltip .tooltip-text {
+        #constant-error-tool .tooltip .tooltip-text {
             visibility: hidden;
             width: max-content;
             max-width: 320px;
@@ -51,12 +305,12 @@
             pointer-events: none;
             line-height: 1.4;
         }
-        .tooltip:hover .tooltip-text {
+        #constant-error-tool .tooltip:hover .tooltip-text {
             visibility: visible;
             opacity: 1;
         }
         /* Chatbot styles */
-        #chatbot-btn {
+        #constant-error-tool #chatbot-btn {
             position: fixed;
             bottom: 32px;
             right: 32px;
@@ -73,7 +327,7 @@
             cursor: pointer;
             font-size: 2rem;
         }
-        #chatbot-modal {
+        #constant-error-tool #chatbot-modal {
             position: fixed;
             bottom: 100px;
             right: 32px;
@@ -88,11 +342,11 @@
             overflow: hidden;
             resize: none; /* default, will enable manually */
         }
-        #chatbot-modal.resizing {
+        #constant-error-tool #chatbot-modal.resizing {
             user-select: none;
             pointer-events: none;
         }
-        #chatbot-header {
+        #constant-error-tool #chatbot-header {
             background: #2563eb;
             color: white;
             padding: 0.75rem 1rem;
@@ -101,41 +355,41 @@
             justify-content: space-between;
             align-items: center;
         }
-        #chatbot-close {
+        #constant-error-tool #chatbot-close {
             background: none;
             border: none;
             color: white;
             font-size: 1.25rem;
             cursor: pointer;
         }
-        #chatbot-messages {
+        #constant-error-tool #chatbot-messages {
             padding: 1rem;
             height: 260px;
             overflow-y: auto;
             background: #f3f4f6;
             font-size: 0.95rem;
         }
-        .chatbot-msg-user {
+        #constant-error-tool .chatbot-msg-user {
             text-align: right;
             margin-bottom: 0.5rem;
         }
-        .chatbot-msg-assistant {
+        #constant-error-tool .chatbot-msg-assistant {
             text-align: left;
             margin-bottom: 0.5rem;
         }
-        #chatbot-input-row {
+        #constant-error-tool #chatbot-input-row {
             display: flex;
             border-top: 1px solid #e5e7eb;
             background: #fff;
         }
-        #chatbot-input {
+        #constant-error-tool #chatbot-input {
             flex: 1;
             border: none;
             padding: 0.75rem;
             font-size: 1rem;
             outline: none;
         }
-        #chatbot-send {
+        #constant-error-tool #chatbot-send {
             background: #2563eb;
             color: white;
             border: none;
@@ -143,7 +397,7 @@
             font-size: 1.1rem;
             cursor: pointer;
         }
-        #chatbot-resizer {
+        #constant-error-tool #chatbot-resizer {
             position: absolute;
             right: 0;
             bottom: 0;
@@ -156,7 +410,7 @@
             align-items: flex-end;
             justify-content: flex-end;
         }
-        #chatbot-resizer:after {
+        #constant-error-tool #chatbot-resizer:after {
             content: "";
             display: block;
             width: 16px;
@@ -169,79 +423,76 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+    <div id="constant-error-tool">
+      <div class="container">
         
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Interactive Constant Error Tool</h1>
-            <p class="mt-2 text-lg text-gray-600">Click on the target to throw darts and measure your own constant error.</p>
+        <header>
+            <h1>Interactive Constant Error Tool</h1>
+            <p>Click on the target to throw darts and measure your own constant error.</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="main-grid">
 
             <!-- Controls and Info Panel -->
-            <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md border border-gray-200">
-                <h2 class="text-xl font-bold mb-6 border-b pb-3">Instructions</h2>
+            <div class="panel panel-controls">
+                <h2>Instructions</h2>
                 
-                <div class="space-y-4">
-                   <p class="text-sm text-gray-700">
+                <div class="instructions">
+                   <p>
                        1. Click on the target area to the right to "throw" a dart.
                    </p>
-                   <p class="text-sm text-gray-700">
+                   <p>
                        2. The tool will record how far above (+) or below (-) the red "True Value" line your throw lands.
                    </p>
-                    <p class="text-sm text-gray-700">
+                    <p>
                        3. After 10 throws, the average error will be calculated automatically.
                    </p>
                 </div>
 
-                <div id="throw-counter-container" class="mt-6">
-                    <h3 class="text-lg font-bold">Throws</h3>
-                    <div class="text-center text-4xl font-mono font-bold text-blue-600 mt-2 bg-gray-100 p-4 rounded-lg">
+                <div id="throw-counter-container">
+                    <h3>Throws</h3>
+                    <div class="counter-display">
                         <span id="throw-count">0</span> / 10
                     </div>
                 </div>
 
-                <div class="mt-8 pt-4 border-t">
-                    <button id="resetBtn" class="w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                <div class="reset-container">
+                    <button id="resetBtn">
                         Reset
                     </button>
                 </div>
             </div>
 
             <!-- Dartboard Visualization -->
-            <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-md border border-gray-200 flex justify-center items-center">
-              <div id="dartboard-container" class="relative w-full h-[500px] flex items-center justify-center">
+            <div class="panel panel-dartboard">
+              <div id="dartboard-container">
                 <!-- Scale -->
-                <div class="h-full w-8 text-xs text-right pr-2 text-gray-500 relative">
-                    <div style="top: 0%;" class="absolute right-2">+25 cm</div>
-                    <div style="top: 25%;" class="absolute right-2">+12.5 cm</div>
-                    <div style="top: 50%; transform: translateY(-50%);" class="absolute right-2 font-bold">0 cm</div>
-                    <div style="bottom: 25%;" class="absolute right-2">-12.5 cm</div>
-                    <div style="bottom: 0%;" class="absolute right-2">-25 cm</div>
+                <div class="scale-container">
+                    <div style="top: 0%;">+25 cm</div>
+                    <div style="top: 25%;">+12.5 cm</div>
+                    <div style="top: 50%;" class="scale-0">0 cm</div>
+                    <div style="bottom: 25%;">-12.5 cm</div>
+                    <div style="bottom: 0%;">-25 cm</div>
                 </div>
                 <!-- Target Area -->
-                <div
-                  id="targetArea"
-                  class="relative w-full aspect-square max-h-[500px] rounded-full overflow-visible shadow-lg"
-                >
+                <div id="targetArea">
                   <!-- True Value Line -->
-                  <div class="absolute w-full h-0.5 bg-red-500 top-1/2 -translate-y-1/2 pointer-events-none">
-                     <span class="absolute -right-14 top-1/2 -translate-y-1/2 text-xs font-bold text-red-500 bg-white px-1 rounded">True Value</span>
+                  <div class="true-value-line">
+                     <span>True Value</span>
                   </div>
                   <!-- Average Line (initially hidden) -->
-                  <div id="averageLine" class="absolute w-full h-1 bg-blue-500 top-1/2 -translate-y-1/2 hidden transition-all duration-500 ease-out pointer-events-none">
-                       <span id="averageLineLabel" class="absolute -left-20 top-1/2 -translate-y-1/2 text-xs font-bold text-blue-500 bg-white px-1 rounded">Average</span>
+                  <div id="averageLine" class="hidden">
+                       <span id="averageLineLabel">Average</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Results Panel -->
-            <div class="lg:col-span-4 bg-white p-6 rounded-xl shadow-md border border-gray-200">
-                <h2 class="text-xl font-bold mb-4 border-b pb-3">Results</h2>
+            <div class="panel panel-results">
+                <h2>Results</h2>
                 <div id="results-content">
-                     <div class="text-center text-gray-500 mt-16">
+                     <div class="placeholder">
                         <p>Click on the target to begin throwing.</p>
                     </div>
                 </div>
@@ -360,10 +611,9 @@
          */
         const renderDart = (x, y) => {
             const dartEl = document.createElement('div');
-            dartEl.className = 'dart absolute w-4 h-4 bg-gray-800 rounded-full border-2 border-white shadow-lg';
+            dartEl.className = 'dart';
             dartEl.style.left = `${x}px`;
             dartEl.style.top = `${y}px`;
-            dartEl.style.transform = 'translate(-50%, -50%)';
             targetArea.appendChild(dartEl);
         };
         
@@ -373,7 +623,7 @@
         const updateResults = () => {
             if (throws.length === 0) {
                  resultsContent.innerHTML = `
-                    <div class="text-center text-gray-500 mt-16">
+                    <div class="placeholder">
                         <p>Click on the target to begin throwing.</p>
                     </div>`;
                 return;
@@ -382,13 +632,13 @@
             // On the first throw, set up summary container + throw log + copy button
             if (throws.length === 1) {
               resultsContent.innerHTML = `
-                <div id="summary-container" class="mb-4"></div>
+                <div id="summary-container"></div>
                 <div>
-                  <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-bold text-gray-800">Throw Log</h3>
-                    <button id="copyLogBtn" class="text-blue-600 hover:underline text-sm">Copy Log</button>
+                  <div class="log-header">
+                    <h3>Throw Log</h3>
+                    <button id="copyLogBtn">Copy Log</button>
                   </div>
-                  <ul id="throw-log" class="mt-2 h-64 overflow-y-auto border rounded-lg p-2 bg-white"></ul>
+                  <ul id="throw-log"></ul>
                 </div>`;
               // Copy-to-clipboard handler
               const copyBtn = document.getElementById('copyLogBtn');
@@ -407,10 +657,9 @@
             const throwLogEl = document.getElementById('throw-log');
             const lastThrow = throws[throws.length - 1];
             const logItem = document.createElement('li');
-            logItem.className = `flex justify-between text-sm py-1 px-2 rounded ${throws.length % 2 === 0 ? 'bg-gray-50' : ''}`;
             logItem.innerHTML = `
                 <span>Throw ${throws.length}:</span>
-                <span class="font-mono font-semibold">${formatValue(lastThrow)} cm</span>`;
+                <span class="value">${formatValue(lastThrow)} cm</span>`;
             throwLogEl.appendChild(logItem);
             throwLogEl.scrollTop = throwLogEl.scrollHeight; // Auto-scroll
 
@@ -421,33 +670,36 @@
                 // New metrics
                 const absSum = throws.reduce((acc, v) => acc + Math.abs(v), 0);
                 const absAvg = absSum / throws.length;
-                const maxError = Math.max(...throws);
-                const minError = Math.min(...throws);
-                const rangeError = maxError - minError;
+                
+                // Calculate Standard Deviation for Variable Error
+                const n = throws.length;
+                const sumOfSquaredDiffs = throws.reduce((acc, val) => acc + Math.pow(val - average, 2), 0);
+                const stdDev = Math.sqrt(sumOfSquaredDiffs / (n - 1));
+
 
                 // Calculation tooltips
                 const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
                 const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
-                const veFormula = `${formatValue(maxError)} - (${formatValue(minError)})`;
+                const veFormula = `sqrt(Σ(xᵢ - x̄)² / (n-1))`;
 
                 const summaryContainer = document.getElementById('summary-container');
                 summaryContainer.innerHTML = `
-                    <h3 class="font-bold text-gray-800">Final Summary</h3>
-                    <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
-                      <div class="flex justify-between items-center tooltip">
-                        <span class="text-sm font-medium">Constant Error 𝑥̄:</span>
-                        <span class="text-lg font-bold text-blue-600">${formatValue(average)} cm</span>
+                    <h3>Final Summary</h3>
+                    <div class="summary-box">
+                      <div class="tooltip">
+                        <span class="label">Constant Error 𝑥̄:</span>
+                        <span class="value">${formatValue(average)} cm</span>
                         <span class="tooltip-text">Calculation: ${ceFormula} = ${formatValue(average)} cm</span>
                       </div>
-                      <div class="flex justify-between items-center tooltip">
-                        <span class="text-sm font-medium">Absolute Error |𝑥̄|:</span>
-                        <span class="text-lg font-bold text-blue-600">${formatValue(absAvg)} cm</span>
+                      <div class="tooltip">
+                        <span class="label">Absolute Error |𝑥̄|:</span>
+                        <span class="value">${formatValue(absAvg)} cm</span>
                         <span class="tooltip-text">Calculation: ${aeFormula} = ${formatValue(absAvg)} cm</span>
                       </div>
-                      <div class="flex justify-between items-center tooltip">
-                        <span class="text-sm font-medium">Variable Error (Range):</span>
-                        <span class="text-lg font-bold text-blue-600">${formatValue(rangeError)} cm</span>
-                        <span class="tooltip-text">Calculation: ${veFormula} = ${formatValue(rangeError)} cm</span>
+                      <div class="tooltip">
+                        <span class="label">Variable Error (<i>SD</i>):</span>
+                        <span class="value">${formatValue(stdDev)} cm</span>
+                        <span class="tooltip-text">Calculation: ${veFormula} = ${formatValue(stdDev)} cm</span>
                       </div>
                     </div>`;
 
@@ -480,7 +732,7 @@
             
             // Reset results panel
             resultsContent.innerHTML = `
-                <div class="text-center text-gray-500 mt-16">
+                <div class="placeholder">
                     <p>Click on the target to begin throwing.</p>
                 </div>`;
             
@@ -612,18 +864,18 @@
                     const average = sum / throws.length;
                     const absSum = throws.reduce((acc, v) => acc + Math.abs(v), 0);
                     const absAvg = absSum / throws.length;
-                    const maxError = Math.max(...throws);
-                    const minError = Math.min(...throws);
-                    const rangeError = maxError - minError;
+                    const n = throws.length;
+                    const sumOfSquaredDiffs = throws.reduce((acc, val) => acc + Math.pow(val - average, 2), 0);
+                    const stdDev = Math.sqrt(sumOfSquaredDiffs / (n - 1));
                     
                     const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
                     const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
-                    const veFormula = `${formatValue(maxError)} - (${formatValue(minError)})`;
+                    const veFormula = `sqrt(Σ(xᵢ - x̄)² / (n-1))`;
 
                     context += "\nFinal Summary:\n";
                     context += `- Constant Error: ${formatValue(average)} cm (Calculation: ${ceFormula})\n`;
                     context += `- Absolute Error: ${formatValue(absAvg)} cm (Calculation: ${aeFormula})\n`;
-                    context += `- Variable Error (Range): ${formatValue(rangeError)} cm (Calculation: ${veFormula})\n`;
+                    context += `- Variable Error (SD): ${formatValue(stdDev)} cm (Calculation: ${veFormula})\n`;
                 }
                 context += "\n---\nUser question: ";
             }
