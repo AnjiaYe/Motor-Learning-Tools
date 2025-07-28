@@ -427,8 +427,8 @@
       <div class="container">
         
         <header>
-            <h1>Interactive Constant Error Tool</h1>
-            <p>Click on the target to throw darts and measure your own constant error.</p>
+            <h1>Interactive Tool</h1>
+            <p>Click on the target to throw darts and measure your own error.</p>
         </header>
 
         <div class="main-grid">
@@ -512,9 +512,7 @@
             <button id="chatbot-close" aria-label="Close">&times;</button>
         </div>
         <div id="chatbot-messages">
-            <div class="chatbot-msg-assistant">
-                <span><b>Assistant:</b> Hi! Ask me anything about constant error, dartboards, or this tool.</span>
-            </div>
+            <!-- Initial messages will be populated by the script -->
         </div>
         <form id="chatbot-input-row" autocomplete="off">
             <input id="chatbot-input" type="text" placeholder="Type your question..." autocomplete="off" />
@@ -757,6 +755,24 @@
 
         let chatbotSession = null;
         let chatbotAvailable = false;
+        let chatbotError = "AI assistant is not available. Your browser may not support the on-device model, or it may be disabled.";
+
+        /**
+         * Displays a system message in the chatbot window.
+         * @param {string} message The message to display.
+         * @param {boolean} isError If true, formats the message as an error.
+         */
+        function displayChatbotSystemMessage(message, isError = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chatbot-msg-assistant';
+            let content = `<span><b>Assistant:</b> ${message}</span>`;
+            if (isError) {
+                content = `<span><b>Assistant:</b> <em style="color: #ef4444;">${message}</em></span>`;
+            }
+            msgDiv.innerHTML = content;
+            chatbotMessages.appendChild(msgDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
 
         // Show/hide chatbot modal
         chatbotBtn.onclick = () => {
@@ -796,18 +812,40 @@
 
         // Try to create a Prompt API session
         async function setupChatbot() {
+            chatbotMessages.innerHTML = ''; // Clear initial messages
+
             if (!('LanguageModel' in window)) {
                 chatbotAvailable = false;
+                chatbotError = "The on-device AI model is not available. It might not be supported by your device.";
+                displayChatbotSystemMessage(chatbotError, true);
                 return;
             }
             try {
-                const availability = await window.LanguageModel.availability({
-                    expectedInputs: [{ type: "text", languages: ["en"] }]
-                });
+                const availabilityOptions = { expectedInputs: [{ type: "text", languages: ["en"] }] };
+                const availability = await window.LanguageModel.availability(availabilityOptions);
+
                 if (availability === "unavailable") {
                     chatbotAvailable = false;
-                    return;
+                    chatbotError = "The on-device AI model is not available. It might not be supported by your device.";
+                    throw new Error(chatbotError);
                 }
+
+                if (availability !== "downloadable" && availability !== "downloading" && availability !== "available") {
+                    chatbotAvailable = false;
+                    chatbotError = `The AI model cannot be used. Status: ${availability}, please wait for it to become available.`;
+                    throw new Error(chatbotError);
+                }
+
+                if (availability === 'available') {
+                    displayChatbotSystemMessage("Hi! Ask me anything about constant error, dartboards, or this tool.");
+                } else {
+                    let message = `On-device AI model status: ${availability}.`;
+                    if (availability === "downloadable") {
+                        message += " The model will be downloaded automatically on first use.";
+                    }
+                    displayChatbotSystemMessage(message);
+                }
+
                 const params = await window.LanguageModel.params();
                 chatbotSession = await window.LanguageModel.create({
                     temperature: 0.8,
@@ -820,6 +858,9 @@
                 chatbotAvailable = true;
             } catch (e) {
                 chatbotAvailable = false;
+                // The specific error is already set, just log for debugging.
+                console.error("Chatbot setup failed:", e.message);
+                displayChatbotSystemMessage(e.message, true);
             }
         }
         setupChatbot();
@@ -845,7 +886,7 @@
 
             // Get response
             if (!chatbotAvailable || !chatbotSession) {
-                thinkingDiv.innerHTML = `<span><b>Assistant:</b> Sorry, AI assistant is not available in this browser.</span>`;
+                thinkingDiv.innerHTML = `<span><b>Assistant:</b> ${chatbotError}</span>`;
                 return;
             }
 
