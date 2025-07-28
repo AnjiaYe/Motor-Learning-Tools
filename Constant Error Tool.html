@@ -814,51 +814,46 @@
         async function setupChatbot() {
             chatbotMessages.innerHTML = ''; // Clear initial messages
 
-            if (!('LanguageModel' in window)) {
-                chatbotAvailable = false;
-                chatbotError = "The on-device AI model is not available. It might not be supported by your device.";
-                displayChatbotSystemMessage(chatbotError, true);
-                return;
-            }
             try {
+                // 1. Check if the Language Model API is supported by the browser.
+                if (!('LanguageModel' in window)) {
+                    throw new Error("The on-device AI model is not available in this browser.");
+                }
+
+                // 2. Check if a model is available for the desired input.
                 const availabilityOptions = { expectedInputs: [{ type: "text", languages: ["en"] }] };
                 const availability = await window.LanguageModel.availability(availabilityOptions);
 
                 if (availability === "unavailable") {
-                    chatbotAvailable = false;
-                    chatbotError = "The on-device AI model is not available. It might not be supported by your device.";
-                    throw new Error(chatbotError);
+                    throw new Error("The on-device AI model is not supported by your device.");
                 }
 
-                if (availability !== "downloadable" && availability !== "downloading" && availability !== "available") {
-                    chatbotAvailable = false;
-                    chatbotError = `The AI model cannot be used. Status: ${availability}, please wait for it to become available.`;
-                    throw new Error(chatbotError);
-                }
-
+                // 3. Inform the user about the model status.
                 if (availability === 'available') {
                     displayChatbotSystemMessage("Hi! Ask me anything about constant error, dartboards, or this tool.");
                 } else {
                     let message = `On-device AI model status: ${availability}.`;
                     if (availability === "downloadable") {
-                        message += " The model will be downloaded automatically on first use.";
+                        message += " The model will be downloaded when you send your first message.";
                     }
                     displayChatbotSystemMessage(message);
                 }
 
+                // 4. Create the chat session.
                 const params = await window.LanguageModel.params();
                 chatbotSession = await window.LanguageModel.create({
                     temperature: 0.8,
-                    topK: params.defaultTopK,
+                    topK: 3,
                     initialPrompts: [
                         { role: "system", content: "You are a helpful assistant for a constant error teaching tool. You will be provided with the user's current throw data (the 'context') before their question. Use this context to answer questions about their performance. Explain concepts, answer questions, and help users understand the dartboard and results. Be brief and helpful." }
                     ],
                     expectedInputs: [{ type: "text", languages: ["en"] }]
                 });
-                chatbotAvailable = true;
+                chatbotAvailable = true; // Keep this to prevent re-setup if needed elsewhere.
+
             } catch (e) {
                 chatbotAvailable = false;
-                // The specific error is already set, just log for debugging.
+                chatbotSession = null; // Ensure session is null on failure.
                 console.error("Chatbot setup failed:", e.message);
                 displayChatbotSystemMessage(e.message, true);
             }
