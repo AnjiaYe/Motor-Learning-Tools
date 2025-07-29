@@ -845,7 +845,7 @@
                     temperature: 0.8,
                     topK: 3,
                     initialPrompts: [
-                        { role: "system", content: "You are a helpful assistant for a constant error teaching tool. You will be provided with the user's current throw data (the 'context') before their question. Use this context to answer questions about their performance. Explain concepts, answer questions, and help users understand the dartboard and results. Be brief and helpful." }
+                        { role: "system", content: "You are a helpful assistant for a constant error teaching tool developed by Anjia Ye. You will be provided with the user's current throw data (the 'context') before their question. Use this context to answer questions about their performance. Explain concepts, answer questions, and help users understand the dartboard and results. Be brief and helpful." }
                     ],
                     expectedInputs: [{ type: "text", languages: ["en"] }]
                 });
@@ -914,6 +914,8 @@
                     context += `- Variable Error (SD): ${formatValue(stdDev)} cm (Calculation: ${veFormula})\n`;
                 }
                 context += "\n---\nUser question: ";
+            } else {
+                context = "The user has not thrown any darts yet.\n---\nUser question: ";
             }
             
             const promptWithContext = context + msg;
