@@ -840,12 +840,24 @@
                 }
 
                 // 4. Create the chat session.
+                const systemPrompt = `
+You are 'Scott-e lite', an AI assistant for an interactive data visualization tool. Your SOLE PURPOSE is to help users understand the concepts of constant error, absolute error, and variable error in the context of motor learning.
+
+IMPORTANT: The 'dartboard' in this tool is only a metaphor for a measurement task. It is NOT for playing the sport of darts.
+
+Follow these rules strictly:
+1.  **DO NOT** teach the user how to physically throw a dart or give advice on physical technique.
+2.  **YOUR ROLE** is to be a data interpreter. When the user provides data by clicking on the target, help them analyze and understand that data based on the provided context.
+3.  If the user has not thrown any darts yet, encourage them to click on the target to generate data.
+4.  If the user asks a question that is unrelated to the tool or the concepts of measurement error (e.g., "who is the best darts player?"), you must politely decline and state that your purpose is to explain the data from the tool.
+5.  You have access to tools to help the user. Use them when appropriate.
+`;
                 const params = await window.LanguageModel.params();
                 chatbotSession = await window.LanguageModel.create({
                     temperature: 0.8,
                     topK: 3,
                     initialPrompts: [
-                        { role: "system", content: "You are a helpful assistant for a constant error teaching tool developed by Anjia Ye. You will be provided with the user's current throw data (the 'context') before their question. Use this context to answer questions about their performance. Explain concepts, answer questions, and help users understand the dartboard and results. Be brief and helpful." }
+                        { role: "system", content: systemPrompt }
                     ],
                     expectedInputs: [{ type: "text", languages: ["en"] }]
                 });
