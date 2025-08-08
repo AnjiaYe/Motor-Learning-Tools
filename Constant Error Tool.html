@@ -9,7 +9,6 @@
         #constant-error-tool {
             font-family: 'Inter', sans-serif;
         }
-        /* General body and container styles */
         body {
             background-color: #f9fafb;
             color: #1f2937;
@@ -26,7 +25,6 @@
                 padding: 2rem;
             }
         }
-        /* Header */
         #constant-error-tool header {
             text-align: center;
             margin-bottom: 2rem;
@@ -46,7 +44,6 @@
             font-size: 1.125rem;
             color: #4b5563;
         }
-        /* Main grid layout */
         #constant-error-tool .main-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -60,7 +57,6 @@
             #constant-error-tool .panel-dartboard { grid-column: span 5; }
             #constant-error-tool .panel-results { grid-column: span 4; }
         }
-        /* Panel base styles */
         #constant-error-tool .panel {
             background-color: #fff;
             padding: 1.5rem;
@@ -75,7 +71,6 @@
             border-bottom: 1px solid #e5e7eb;
             padding-bottom: 0.75rem;
         }
-        /* Controls Panel */
         .panel-controls .instructions p {
             font-size: 0.875rem;
             color: #374151;
@@ -112,7 +107,6 @@
             transition: background-color 0.2s;
         }
         #resetBtn:hover { background-color: #d1d5db; }
-        /* Dartboard Panel */
         .panel-dartboard {
             display: flex;
             justify-content: center;
@@ -138,21 +132,19 @@
         }
         .scale-container div { position: absolute; right: 0.5rem; }
         .scale-container .scale-0 { font-weight: 700; transform: translateY(-50%); }
-        /* scope the dartboard styles */
         #constant-error-tool #targetArea {
             cursor: crosshair;
-            /* concentric rings resembling a dartboard */
             background: radial-gradient(
               circle at center,
-              #c0392b        0% 12%,   /* inner bull (red) */
-              #27ae60       12% 22%,   /* outer bull (green) */
-              #000000       22% 42%,   /* single ring (black) */
-              #ecf0f1       42% 62%,   /* single ring (white) */
-              #000000       62% 82%,   /* outer single ring (black) */
-              transparent   82% 100%   /* fade out */
+              #c0392b        0% 12%,
+              #27ae60       12% 22%,
+              #000000       22% 42%,
+              #ecf0f1       42% 62%,
+              #000000       62% 82%,
+              transparent   82% 100%
             );
-            border: 8px solid #2d3436;               /* thick dark rim */
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.6); /* inner shadow for depth */
+            border: 8px solid #2d3436;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -204,7 +196,6 @@
             padding: 0 0.25rem;
             border-radius: 0.25rem;
         }
-        /* Results Panel */
         #results-content .placeholder {
             text-align: center;
             color: #6b7280;
@@ -246,7 +237,7 @@
         #copyLogBtn:hover { text-decoration: underline; }
         #throw-log {
             margin-top: 0.5rem;
-            height: 16rem; /* 256px */
+            height: 16rem;
             overflow-y: auto;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
@@ -279,7 +270,6 @@
             font-weight: 600;
             margin-top: 1rem;
         }
-        /* Custom Tooltip styles */
         #constant-error-tool .tooltip {
             position: relative;
             cursor: help;
@@ -309,7 +299,6 @@
             visibility: visible;
             opacity: 1;
         }
-        /* Chatbot styles */
         #constant-error-tool #chatbot-btn {
             position: fixed;
             bottom: 32px;
@@ -326,6 +315,31 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             cursor: pointer;
             font-size: 2rem;
+            outline: none;
+            border: none;
+        }
+        #constant-error-tool #chatbot-btn.is-unavailable {
+            background: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        #constant-error-tool #chatbot-btn.is-active {
+            animation: chatbot-pulse 3s ease-in-out infinite;
+        }
+        @keyframes chatbot-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.45); }
+            50% { box-shadow: 0 0 0 10px rgba(37,99,235,0); }
+        }
+        #constant-error-tool #chatbot-btn.has-notification::after {
+            content: "";
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 14px;
+            height: 14px;
+            background: #ef4444;
+            border: 2px solid #fff;
+            border-radius: 50%;
         }
         #constant-error-tool #chatbot-modal {
             position: fixed;
@@ -340,7 +354,7 @@
             display: none;
             flex-direction: column;
             overflow: hidden;
-            resize: none; /* default, will enable manually */
+            resize: none;
         }
         #constant-error-tool #chatbot-modal.resizing {
             user-select: none;
@@ -425,48 +439,32 @@
 <body class="bg-gray-50 text-gray-800">
     <div id="constant-error-tool">
       <div class="container">
-        
         <header>
             <h1>Interactive Tool</h1>
             <p>Click on the target to throw darts and measure your own error.</p>
         </header>
 
         <div class="main-grid">
-
-            <!-- Controls and Info Panel -->
             <div class="panel panel-controls">
                 <h2>Instructions</h2>
-                
                 <div class="instructions">
-                   <p>
-                       1. Click on the target area to the right to "throw" a dart.
-                   </p>
-                   <p>
-                       2. The tool will record how far above (+) or below (-) the red "True Value" line your throw lands.
-                   </p>
-                    <p>
-                       3. After 10 throws, the average error will be calculated automatically.
-                   </p>
+                   <p>1. Click on the target area to the right to "throw" a dart.</p>
+                   <p>2. The tool records how far above (+) or below (-) the red "True Value" line your throw lands.</p>
+                   <p>3. After 10 throws, the average error is calculated automatically.</p>
                 </div>
-
                 <div id="throw-counter-container">
                     <h3>Throws</h3>
                     <div class="counter-display">
                         <span id="throw-count">0</span> / 10
                     </div>
                 </div>
-
                 <div class="reset-container">
-                    <button id="resetBtn">
-                        Reset
-                    </button>
+                    <button id="resetBtn">Reset</button>
                 </div>
             </div>
 
-            <!-- Dartboard Visualization -->
             <div class="panel panel-dartboard">
               <div id="dartboard-container">
-                <!-- Scale -->
                 <div class="scale-container">
                     <div style="top: 0%;">+25 cm</div>
                     <div style="top: 25%;">+12.5 cm</div>
@@ -474,13 +472,10 @@
                     <div style="bottom: 25%;">-12.5 cm</div>
                     <div style="bottom: 0%;">-25 cm</div>
                 </div>
-                <!-- Target Area -->
                 <div id="targetArea">
-                  <!-- True Value Line -->
                   <div class="true-value-line">
                      <span>True Value</span>
                   </div>
-                  <!-- Average Line (initially hidden) -->
                   <div id="averageLine" class="hidden">
                        <span id="averageLineLabel">Average</span>
                   </div>
@@ -488,7 +483,6 @@
               </div>
             </div>
 
-            <!-- Results Panel -->
             <div class="panel panel-results">
                 <h2>Results</h2>
                 <div id="results-content">
@@ -497,33 +491,32 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Chatbot Button -->
-    <div id="chatbot-btn" title="Ask AI">
+    <div id="chatbot-btn"
+         title="Ask AI"
+         role="button"
+         aria-label="Chatbot"
+         tabindex="0">
         💬
     </div>
-    <!-- Chatbot Modal -->
-    <div id="chatbot-modal">
+    <div id="chatbot-modal" aria-modal="true" role="dialog">
         <div id="chatbot-header">
             <span>Ask Scott-e lite</span>
             <button id="chatbot-close" aria-label="Close">&times;</button>
         </div>
-        <div id="chatbot-messages">
-            <!-- Initial messages will be populated by the script -->
-        </div>
+        <div id="chatbot-messages"></div>
         <form id="chatbot-input-row" autocomplete="off">
-            <input id="chatbot-input" type="text" placeholder="Type your question..." autocomplete="off" />
-            <button id="chatbot-send" type="submit">Send</button>
+            <input id="chatbot-input" type="text" placeholder="Type your question..." autocomplete="off" aria-label="Chatbot text input" />
+            <button id="chatbot-send" type="submit" aria-label="Send message">Send</button>
         </form>
-        <div id="chatbot-resizer"></div>
+        <div id="chatbot-resizer" aria-hidden="true"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        // DOM Elements
+        // Elements
         const resetBtn = document.getElementById('resetBtn');
         const targetArea = document.getElementById('targetArea');
         const averageLine = document.getElementById('averageLine');
@@ -531,220 +524,193 @@
         const resultsContent = document.getElementById('results-content');
         const throwCountEl = document.getElementById('throw-count');
 
-        // --- State ---
+        // State
         let throws = [];
         const MAX_THROWS = 10;
 
-        // --- Utility Functions ---
-        
-        /**
-         * Formats a number to one decimal place and adds a '+' sign if positive.
-         * @param {number} num The number to format.
-         * @returns {string} The formatted string.
-         */
+        // Formatting utilities
         const formatValue = (num) => {
             const fixedNum = num.toFixed(1);
             return num >= 0 ? `+${fixedNum}` : fixedNum;
         };
-
-        /**
-         * Maps a vertical pixel position within the target to a cm value.
-         * The board represents a range of 50cm (-25 to +25).
-         * @param {number} yPosition The y-coordinate of the click relative to the target area.
-         * @param {number} targetHeight The total height of the target area.
-         * @returns {number} The measurement in centimeters.
-         */
         const mapPixelsToCm = (yPosition, targetHeight) => {
             const percentage = yPosition / targetHeight;
-            // We multiply by -50 because a higher pixel value (down) corresponds to a negative cm value (up).
-            const cm = (percentage - 0.5) * -50;
-            return cm;
+            return (percentage - 0.5) * -50;
         };
-        
-        /**
-         * Maps a measurement value (cm) to a percentage for CSS positioning.
-         * @param {number} cm The measurement in centimeters.
-         * @returns {number} The top percentage for positioning.
-         */
         const mapCmToPercentage = (cm) => {
             const clampedCm = Math.max(-25, Math.min(25, cm));
             return 50 - (clampedCm / 25) * 50;
         };
-        
-        // --- Core Logic ---
 
-        /**
-         * Handles a click on the target area to record a throw.
-         * @param {MouseEvent} event The click event.
-         */
-        const handleTargetClick = (event) => {
+        // Core interaction
+        function handleTargetClick(e) {
             if (throws.length >= MAX_THROWS) {
-                // Simple feedback if user clicks after 10 throws
-                const fullMessage = document.querySelector('.full-message');
-                if (!fullMessage) {
+                if (!document.querySelector('.full-message')) {
                     const p = document.createElement('p');
-                    p.className = 'full-message text-center text-red-500 font-semibold mt-4';
+                    p.className = 'full-message';
                     p.textContent = 'Throw limit reached. Please Reset.';
                     document.getElementById('throw-counter-container').appendChild(p);
                 }
                 return;
             }
-
             const rect = targetArea.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
             const cmValue = mapPixelsToCm(y, rect.height);
             throws.push(cmValue);
-
             renderDart(x, y);
             updateResults();
             updateThrowCounter();
-        };
+        }
 
-        /**
-         * Renders a single dart on the target at the clicked position.
-         * @param {number} x The horizontal pixel position.
-         * @param {number} y The vertical pixel position.
-         */
-        const renderDart = (x, y) => {
+        function renderDart(x, y) {
             const dartEl = document.createElement('div');
             dartEl.className = 'dart';
             dartEl.style.left = `${x}px`;
             dartEl.style.top = `${y}px`;
             targetArea.appendChild(dartEl);
-        };
-        
-        /**
-         * Updates the results panel with the log and summary stats if applicable.
-         */
-        const updateResults = () => {
+        }
+
+        async function updateResults() {
             if (throws.length === 0) {
-                 resultsContent.innerHTML = `
-                    <div class="placeholder">
-                        <p>Click on the target to begin throwing.</p>
-                    </div>`;
+                resultsContent.innerHTML = `
+                  <div class="placeholder">
+                    <p>Click on the target to begin throwing.</p>
+                  </div>`;
                 return;
             }
-            
-            // On the first throw, set up summary container + throw log + copy button
             if (throws.length === 1) {
-              resultsContent.innerHTML = `
-                <div id="summary-container"></div>
-                <div>
-                  <div class="log-header">
-                    <h3>Throw Log</h3>
-                    <button id="copyLogBtn">Copy Log</button>
-                  </div>
-                  <ul id="throw-log"></ul>
-                </div>`;
-              // Copy-to-clipboard handler
-              const copyBtn = document.getElementById('copyLogBtn');
-              copyBtn.addEventListener('click', () => {
-                let data = 'Throw\tError(cm)\n';
-                throws.forEach((val, idx) => {
-                  data += `${idx + 1}\t${formatValue(val)}\n`;
+                resultsContent.innerHTML = `
+                  <div id="summary-container"></div>
+                  <div>
+                    <div class="log-header">
+                      <h3>Throw Log</h3>
+                      <button id="copyLogBtn" type="button">Copy Log</button>
+                    </div>
+                    <ul id="throw-log"></ul>
+                  </div>`;
+                document.getElementById('copyLogBtn').addEventListener('click', () => {
+                    let data = 'Throw\tError(cm)\n';
+                    throws.forEach((val, idx) => {
+                        data += `${idx + 1}\t${formatValue(val)}\n`;
+                    });
+                    navigator.clipboard.writeText(data).then(() => alert('Throw log copied to clipboard!'));
                 });
-                navigator.clipboard.writeText(data).then(() => {
-                  alert('Throw log copied to clipboard!');
-                });
-              });
             }
-
-            // Update the throw log
             const throwLogEl = document.getElementById('throw-log');
-            const lastThrow = throws[throws.length - 1];
-            const logItem = document.createElement('li');
-            logItem.innerHTML = `
-                <span>Throw ${throws.length}:</span>
-                <span class="value">${formatValue(lastThrow)} cm</span>`;
-            throwLogEl.appendChild(logItem);
-            throwLogEl.scrollTop = throwLogEl.scrollHeight; // Auto-scroll
+            const last = throws[throws.length - 1];
+            const li = document.createElement('li');
+            li.innerHTML = `<span>Throw ${throws.length}:</span><span class="value">${formatValue(last)} cm</span>`;
+            throwLogEl.appendChild(li);
+            throwLogEl.scrollTop = throwLogEl.scrollHeight;
 
-            // If 10 throws are complete, calculate and show the average
             if (throws.length === MAX_THROWS) {
-                const sum = throws.reduce((acc, val) => acc + val, 0);
-                const average = sum / throws.length;
-                // New metrics
-                const absSum = throws.reduce((acc, v) => acc + Math.abs(v), 0);
-                const absAvg = absSum / throws.length;
-                
-                // Calculate Standard Deviation for Variable Error
-                const n = throws.length;
-                const sumOfSquaredDiffs = throws.reduce((acc, val) => acc + Math.pow(val - average, 2), 0);
-                const stdDev = Math.sqrt(sumOfSquaredDiffs / (n - 1));
-
-
-                // Calculation tooltips
-                const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
-                const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
-                const veFormula = `sqrt(Σ(xᵢ - x̄)² / (n-1))`;
-
-                const summaryContainer = document.getElementById('summary-container');
-                summaryContainer.innerHTML = `
-                    <h3>Final Summary</h3>
-                    <div class="summary-box">
-                      <div class="tooltip">
-                        <span class="label">Constant Error 𝑥̄:</span>
-                        <span class="value">${formatValue(average)} cm</span>
-                        <span class="tooltip-text">Calculation: ${ceFormula} = ${formatValue(average)} cm</span>
-                      </div>
-                      <div class="tooltip">
-                        <span class="label">Absolute Error |𝑥̄|:</span>
-                        <span class="value">${formatValue(absAvg)} cm</span>
-                        <span class="tooltip-text">Calculation: ${aeFormula} = ${formatValue(absAvg)} cm</span>
-                      </div>
-                      <div class="tooltip">
-                        <span class="label">Variable Error (<i>SD</i>):</span>
-                        <span class="value">${formatValue(stdDev)} cm</span>
-                        <span class="tooltip-text">Calculation: ${veFormula} = ${formatValue(stdDev)} cm</span>
-                      </div>
-                    </div>`;
-
-                // Update and show the average line on the board
+                const { average, absAvg, stdDev, ceFormula, aeFormula, veFormula } = calculateMetrics();
+                document.getElementById('summary-container').innerHTML = `
+                  <h3>Final Summary</h3>
+                  <div class="summary-box">
+                    <div class="tooltip">
+                      <span class="label">Constant Error 𝑥̄:</span>
+                      <span class="value">${formatValue(average)} cm</span>
+                      <span class="tooltip-text">Calculation: ${ceFormula} = ${formatValue(average)} cm</span>
+                    </div>
+                    <div class="tooltip">
+                      <span class="label">Absolute Error |𝑥̄|:</span>
+                      <span class="value">${formatValue(absAvg)} cm</span>
+                      <span class="tooltip-text">Calculation: ${aeFormula} = ${formatValue(absAvg)} cm</span>
+                    </div>
+                    <div class="tooltip">
+                      <span class="label">Variable Error (SD):</span>
+                      <span class="value">${formatValue(stdDev)} cm</span>
+                      <span class="tooltip-text">Calculation: ${veFormula} = ${formatValue(stdDev)} cm</span>
+                    </div>
+                  </div>`;
                 averageLine.style.top = `${mapCmToPercentage(average)}%`;
                 averageLineLabel.textContent = `Avg: ${formatValue(average)} cm`;
                 averageLine.classList.remove('hidden');
-            }
-        };
 
-        /**
-         * Updates the visual throw counter.
-         */
-        const updateThrowCounter = () => {
+                if (!hasShownAnalysisPrompt && chatbotAvailable && chatbotSession) {
+                    hasShownAnalysisPrompt = true;
+                    try {
+                        deliverProactiveMessage("Analyzing your performance...");
+
+                        let context = `Here is the current context of the user's performance:\nThrows made: ${throws.length} / ${MAX_THROWS}\nThrow Log (deviation from center in cm):\n`;
+                        throws.forEach((v, i) => { context += `- Throw ${i + 1}: ${formatValue(v)}\n`; });
+                        context += `\nFinal Summary:\n- Constant Error: ${formatValue(average)} cm (Calculation: ${ceFormula})\n`;
+                        context += `- Absolute Error: ${formatValue(absAvg)} cm (Calculation: ${aeFormula})\n`;
+                        context += `- Variable Error (SD): ${formatValue(stdDev)} cm (Calculation: ${veFormula})\n`;
+                        context += `\n---\nUser question: How was my performance?`;
+
+                        const brief = await chatbotSession.prompt(context);
+                        
+                        // Replace the "Analyzing..." message with the actual brief.
+                        if (chatIsOpen()) {
+                            const messages = chatbotMessages.querySelectorAll('.chatbot-msg-assistant');
+                            const lastMessage = messages[messages.length - 1];
+                            if (lastMessage && lastMessage.textContent.includes("Analyzing your performance...")) {
+                                lastMessage.innerHTML = `<span><b>Assistant:</b> </span><div class="prose prose-sm">${marked.parse(brief)}</div>`;
+                            } else {
+                                renderAssistantMessage(marked.parse(brief));
+                            }
+                        } else {
+                            proactiveMessageQueue.pop(); // remove "Analyzing..."
+                            const fullBrief = brief + "\n\nYou can ask me for more details, or what these concepts mean.";
+                            queueProactiveMessage(marked.parse(fullBrief));
+                        }
+                    } catch (e) {
+                        console.error("Failed to get AI performance brief:", e);
+                        deliverProactiveMessage("I had trouble analyzing your performance. Please ask me about it directly.");
+                    }
+                }
+            }
+        }
+
+        function calculateMetrics() {
+            const sum = throws.reduce((a, v) => a + v, 0);
+            const average = sum / throws.length;
+            const absSum = throws.reduce((a, v) => a + Math.abs(v), 0);
+            const absAvg = absSum / throws.length;
+            const n = throws.length;
+            const ssd = throws.reduce((a, v) => a + Math.pow(v - average, 2), 0);
+            const stdDev = Math.sqrt(ssd / (n - 1));
+            const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
+            const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
+            const veFormula = `sqrt(Σ(xᵢ - x̄)² / (n-1))`;
+            return { average, absAvg, stdDev, ceFormula, aeFormula, veFormula };
+        }
+
+        function updateThrowCounter() {
             throwCountEl.textContent = throws.length;
-        };
-        
-        /**
-         * Resets the entire tool to its initial state.
-         */
-        const handleReset = () => {
+        }
+
+        function handleReset() {
             throws = [];
-            
-            // Remove darts from board
-            const existingDarts = targetArea.querySelectorAll('.dart');
-            existingDarts.forEach(dart => dart.remove());
-            
-            // Hide average line
+            targetArea.querySelectorAll('.dart').forEach(d => d.remove());
             averageLine.classList.add('hidden');
-            
-            // Reset results panel
             resultsContent.innerHTML = `
                 <div class="placeholder">
                     <p>Click on the target to begin throwing.</p>
                 </div>`;
-            
-            // Reset counter
             updateThrowCounter();
-            const fullMessage = document.querySelector('.full-message');
-            if (fullMessage) fullMessage.remove();
-        };
-        
-        // --- Event Listeners ---
+            const fm = document.querySelector('.full-message');
+            if (fm) fm.remove();
+
+            // Reset proactive flags
+            hasShownAnalysisPrompt = false;
+            hasShownWelcomePrompt = false;
+            proactiveMessageQueue = [];
+            hasUnreadProactiveMessage = false;
+            updateChatbotIcon();
+
+            if (chatbotAvailable) {
+                deliverProactiveMessage("Session reset. Start throwing again when you’re ready; I’ll summarize once you reach 10 throws.");
+            }
+        }
+
         targetArea.addEventListener('click', handleTargetClick);
         resetBtn.addEventListener('click', handleReset);
 
-        // --- Chatbot logic ---
+        // Chatbot logic
         const chatbotBtn = document.getElementById('chatbot-btn');
         const chatbotModal = document.getElementById('chatbot-modal');
         const chatbotClose = document.getElementById('chatbot-close');
@@ -757,35 +723,95 @@
         let chatbotAvailable = false;
         let chatbotError = "AI assistant is not available. Your browser may not support the on-device model, or it may be disabled.";
 
-        /**
-         * Displays a system message in the chatbot window.
-         * @param {string} message The message to display.
-         * @param {boolean} isError If true, formats the message as an error.
-         */
-        function displayChatbotSystemMessage(message, isError = false) {
+        // Proactive state
+        let proactiveMessageQueue = [];
+        let hasUnreadProactiveMessage = false;
+        let hasShownAnalysisPrompt = false;
+        let hasShownWelcomePrompt = false;
+
+        const WELCOME_MESSAGE = "Hi! I am Scott-e lite. Click anywhere on the target to start generating data. I can help understand measurements once you have a few throws.";
+
+        function chatIsOpen() {
+            return chatbotModal.style.display === 'flex';
+        }
+
+        function renderAssistantMessage(message, isError = false) {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'chatbot-msg-assistant';
-            let content = `<span><b>Assistant:</b> ${message}</span>`;
-            if (isError) {
-                content = `<span><b>Assistant:</b> <em style="color: #ef4444;">${message}</em></span>`;
-            }
-            msgDiv.innerHTML = content;
+            msgDiv.innerHTML = `<span><b>Assistant:</b> ${isError ? `<em style="color:#ef4444;">${message}</em>` : message}</span>`;
             chatbotMessages.appendChild(msgDiv);
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         }
 
-        // Show/hide chatbot modal
+        function displayChatbotSystemMessage(message, isError = false) {
+            renderAssistantMessage(message, isError);
+        }
+
+        function queueProactiveMessage(msg) {
+            proactiveMessageQueue.push(msg);
+            hasUnreadProactiveMessage = true;
+            updateChatbotIcon();
+        }
+
+        function flushProactiveMessages() {
+            proactiveMessageQueue.forEach(m => renderAssistantMessage(m));
+            proactiveMessageQueue = [];
+            hasUnreadProactiveMessage = false;
+            updateChatbotIcon();
+        }
+
+        function deliverProactiveMessage(msg) {
+            if (!chatbotAvailable) return;
+            if (chatIsOpen()) {
+                renderAssistantMessage(msg);
+            } else {
+                queueProactiveMessage(msg);
+            }
+        }
+
+        function deliverInitialGreeting() {
+            if (hasShownWelcomePrompt || !chatbotAvailable || throws.length > 0) return;
+            hasShownWelcomePrompt = true;
+            deliverProactiveMessage(WELCOME_MESSAGE);
+        }
+
+        function updateChatbotIcon() {
+            chatbotBtn.classList.remove('is-unavailable', 'is-active', 'has-notification');
+            if (!chatbotAvailable) {
+                chatbotBtn.classList.add('is-unavailable');
+                chatbotBtn.setAttribute('aria-label', 'Chatbot unavailable');
+                return;
+            }
+            chatbotBtn.classList.add('is-active');
+            if (hasUnreadProactiveMessage) {
+                chatbotBtn.classList.add('has-notification');
+                chatbotBtn.setAttribute('aria-label', 'Chatbot (new message)');
+            } else {
+                chatbotBtn.setAttribute('aria-label', 'Chatbot');
+            }
+        }
+
         chatbotBtn.onclick = () => {
             chatbotModal.style.display = 'flex';
-            chatbotInput.focus();
+            chatbotInput.disabled = !chatbotAvailable;
+            if (chatbotAvailable) chatbotInput.focus();
+            if (hasUnreadProactiveMessage) flushProactiveMessages();
         };
+
+        chatbotBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                chatbotBtn.click();
+            }
+        });
+
         chatbotClose.onclick = () => {
             chatbotModal.style.display = 'none';
         };
 
-        // Resizing logic
+        // Resizing
         let resizing = false, startX, startY, startW, startH;
-        chatbotResizer.addEventListener('mousedown', function(e) {
+        chatbotResizer.addEventListener('mousedown', (e) => {
             e.preventDefault();
             resizing = true;
             chatbotModal.classList.add('resizing');
@@ -795,14 +821,14 @@
             startH = chatbotModal.offsetHeight;
             document.body.style.cursor = 'nwse-resize';
         });
-        window.addEventListener('mousemove', function(e) {
+        window.addEventListener('mousemove', (e) => {
             if (!resizing) return;
-            let newW = Math.max(250, Math.min(600, startW + (e.clientX - startX)));
-            let newH = Math.max(200, Math.min(600, startH + (e.clientY - startY)));
+            const newW = Math.max(250, Math.min(600, startW + (e.clientX - startX)));
+            const newH = Math.max(200, Math.min(600, startH + (e.clientY - startY)));
             chatbotModal.style.width = newW + 'px';
             chatbotModal.style.height = newH + 'px';
         });
-        window.addEventListener('mouseup', function() {
+        window.addEventListener('mouseup', () => {
             if (resizing) {
                 resizing = false;
                 chatbotModal.classList.remove('resizing');
@@ -810,145 +836,99 @@
             }
         });
 
-        // Try to create a Prompt API session
         async function setupChatbot() {
-            chatbotMessages.innerHTML = ''; // Clear initial messages
-
+            chatbotMessages.innerHTML = '';
             try {
-                // 1. Check if the Language Model API is supported by the browser.
                 if (!('LanguageModel' in window)) {
                     throw new Error("The on-device AI model is not available in this browser.");
                 }
-
-                // 2. Check if a model is available for the desired input.
                 const availabilityOptions = { expectedInputs: [{ type: "text", languages: ["en"] }] };
                 const availability = await window.LanguageModel.availability(availabilityOptions);
-
                 if (availability === "unavailable") {
                     throw new Error("The on-device AI model is not supported by your device.");
                 }
-
-                // 3. Inform the user about the model status.
-                if (availability === 'available') {
-                    displayChatbotSystemMessage("Hi! Ask me anything about constant error, dartboards, or this tool.");
-                } else {
-                    let message = `On-device AI model status: ${availability}.`;
-                    if (availability === "downloadable") {
-                        message += " The model will be downloaded when you send your first message.";
-                    }
-                    displayChatbotSystemMessage(message);
+                if (availability === "downloadable") {
+                    displayChatbotSystemMessage("Model is downloadable and will load when you send your first message.");
                 }
 
-                // 4. Create the chat session.
                 const systemPrompt = `
-You are 'Scott-e lite', an AI assistant for an interactive data visualization tool. Your SOLE PURPOSE is to help users understand the concepts of constant error, absolute error, and variable error in the context of motor learning.
-
-IMPORTANT: The 'dartboard' in this tool is only a metaphor for a measurement task. It is NOT for playing the sport of darts.
-
-Follow these rules strictly:
-1.  **DO NOT** teach the user how to physically throw a dart or give advice on physical technique.
-2.  **YOUR ROLE** is to be a data interpreter. When the user provides data by clicking on the target, help them analyze and understand that data based on the provided context.
-3.  If the user has not thrown any darts yet, encourage them to click on the target to generate data.
-4.  If the user asks a question that is unrelated to the tool or the concepts of measurement error (e.g., "who is the best darts player?"), you must politely decline and state that your purpose is to explain the data from the tool.
-5.  You have access to tools to help the user. Use them when appropriate.
+You are 'Scott-e lite', an AI assistant for an interactive measurement error tool.
+You ONLY help users understand constant error, absolute error, variable error, and interpreting their recorded throws (metaphor only).
+Rules:
+1. Do NOT give physical throwing technique.
+2. Response in most concise words.
+3. Stay on topic (measurement error). Politely refuse off-topic queries.
+4. Use provided throws and derived metrics to explain performance clearly.
 `;
-                const params = await window.LanguageModel.params();
                 chatbotSession = await window.LanguageModel.create({
                     temperature: 0.8,
                     topK: 3,
-                    initialPrompts: [
-                        { role: "system", content: systemPrompt }
-                    ],
+                    initialPrompts: [{ role: "system", content: systemPrompt }],
                     expectedInputs: [{ type: "text", languages: ["en"] }]
                 });
-                chatbotAvailable = true; // Keep this to prevent re-setup if needed elsewhere.
-
+                chatbotAvailable = true;
             } catch (e) {
                 chatbotAvailable = false;
-                chatbotSession = null; // Ensure session is null on failure.
+                chatbotSession = null;
                 console.error("Chatbot setup failed:", e.message);
                 displayChatbotSystemMessage(e.message, true);
+            } finally {
+                updateChatbotIcon();
+                deliverInitialGreeting();
             }
         }
         setupChatbot();
 
-        // Handle sending a message
         chatbotInputRow.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!chatbotAvailable || !chatbotSession) {
+                renderAssistantMessage(chatbotError, true);
+                return;
+            }
             const msg = chatbotInput.value.trim();
             if (!msg) return;
-            // Show user message
             const userDiv = document.createElement('div');
             userDiv.className = 'chatbot-msg-user';
             userDiv.innerHTML = `<span><b>You:</b> ${msg}</span>`;
             chatbotMessages.appendChild(userDiv);
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
             chatbotInput.value = '';
-            // Show assistant "thinking"
+
             const thinkingDiv = document.createElement('div');
             thinkingDiv.className = 'chatbot-msg-assistant';
             thinkingDiv.innerHTML = `<span><b>Assistant:</b> <em>Thinking...</em></span>`;
             chatbotMessages.appendChild(thinkingDiv);
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
-            // Get response
-            if (!chatbotAvailable || !chatbotSession) {
-                thinkingDiv.innerHTML = `<span><b>Assistant:</b> ${chatbotError}</span>`;
-                return;
-            }
-
-            // --- Build context from game state ---
-            let context = "";
-            if (throws.length > 0) {
-                context += `Here is the current context of the user's performance:\n`;
-                context += `Throws made: ${throws.length} / ${MAX_THROWS}\n`;
-                context += "Throw Log (deviation from center in cm):\n";
-                throws.forEach((val, idx) => {
-                    context += `- Throw ${idx + 1}: ${formatValue(val)}\n`;
-                });
-
+            let context;
+            if (throws.length === 0) {
+                context = "The user has not thrown any darts yet.\n---\nUser question: " + msg;
+            } else {
+                context = `Here is the current context of the user's performance:\nThrows made: ${throws.length} / ${MAX_THROWS}\nThrow Log (deviation from center in cm):\n`;
+                throws.forEach((v, i) => { context += `- Throw ${i + 1}: ${formatValue(v)}\n`; });
                 if (throws.length === MAX_THROWS) {
-                    const sum = throws.reduce((acc, val) => acc + val, 0);
-                    const average = sum / throws.length;
-                    const absSum = throws.reduce((acc, v) => acc + Math.abs(v), 0);
-                    const absAvg = absSum / throws.length;
-                    const n = throws.length;
-                    const sumOfSquaredDiffs = throws.reduce((acc, val) => acc + Math.pow(val - average, 2), 0);
-                    const stdDev = Math.sqrt(sumOfSquaredDiffs / (n - 1));
-                    
-                    const ceFormula = `(${throws.map(t => formatValue(t)).join(' + ')}) / ${throws.length}`;
-                    const aeFormula = `(${throws.map(t => `|${formatValue(t)}|`).join(' + ')}) / ${throws.length}`;
-                    const veFormula = `sqrt(Σ(xᵢ - x̄)² / (n-1))`;
-
-                    context += "\nFinal Summary:\n";
-                    context += `- Constant Error: ${formatValue(average)} cm (Calculation: ${ceFormula})\n`;
+                    const { average, absAvg, stdDev, ceFormula, aeFormula, veFormula } = calculateMetrics();
+                    context += `\nFinal Summary:\n- Constant Error: ${formatValue(average)} cm (Calculation: ${ceFormula})\n`;
                     context += `- Absolute Error: ${formatValue(absAvg)} cm (Calculation: ${aeFormula})\n`;
                     context += `- Variable Error (SD): ${formatValue(stdDev)} cm (Calculation: ${veFormula})\n`;
                 }
-                context += "\n---\nUser question: ";
-            } else {
-                context = "The user has not thrown any darts yet.\n---\nUser question: ";
+                context += `\n---\nUser question: ${msg}`;
             }
-            
-            const promptWithContext = context + msg;
 
             try {
-                const response = await chatbotSession.prompt(promptWithContext);
-                // Render markdown
+                const response = await chatbotSession.prompt(context);
                 thinkingDiv.innerHTML = `<span><b>Assistant:</b> </span><div class="prose prose-sm">${marked.parse(response)}</div>`;
-            } catch (err) {
+            } catch {
                 thinkingDiv.innerHTML = `<span><b>Assistant:</b> Sorry, something went wrong.</span>`;
             }
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         });
 
-        // Optional: close modal on outside click
         window.addEventListener('mousedown', (e) => {
             if (chatbotModal.style.display === 'flex' && !chatbotModal.contains(e.target) && e.target !== chatbotBtn) {
                 chatbotModal.style.display = 'none';
             }
         });
-
     </script>
 </body>
 </html>
